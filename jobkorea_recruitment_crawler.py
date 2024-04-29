@@ -103,10 +103,7 @@ def get_recruitment_infos(hrefs):
         '고용 형태', '급여', '지역'
     ])
     for idx, url in enumerate(hrefs, start=1):
-        response = requests.get(url, headers={
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36'
-        })
-        soup = bs(response.text, "lxml")
+        soup = get_soup_from_page_with_query(url)
         print(idx)
         article = soup.find("article", "artReadJobSum")
         recruitment_title = article.find("h3").text.split("\n")[-2].strip()
