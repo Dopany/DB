@@ -52,7 +52,6 @@ def main():
     for type_name in type_list:
         directory = root_directory + type_name
         file_list = get_file_list(directory)
-        print(file_list)
         for file_name in file_list:
             transform_columns(type_name + '/' + file_name)
 
