@@ -48,24 +48,46 @@ def main():
                      "포털.컨텐츠.커뮤니티", "네트워크.통신서비스", "정보보안",
                      "컴퓨터.하드웨어.장비", "게임.애니메이션", "모바일.APP", "IT컨설팅"],
         "금융.은행업": ["은행.금융", "캐피탈.대출", "증권.보험.카드"],
+        "미디어.광고업" : ["방송.케이블.프로덕션", "신문.잡지.언론사", "광고.홍보.전시",
+                     "영화.음반.배급", "연예.엔터테인먼트", "출판.인쇄.사진"],
+        "문화.예술.디자인업": ["문화.공연.예술", "디자인.CAD"],
+        "의료.제약업": ["제약.보건.바이오"],
     }
     page_no = 1
     company_info_urls = pd.DataFrame(columns=['company_info_url'])
+    industry = "의료.제약업>" + industries['의료.제약업'][0]
     while True:
         urls = {
             "IT.정보통신업>솔루션.SI.CRM.ERP": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10007&indsCode=1000038&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "IT.정보통신업>웹에이전시" :f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10007&indsCode=1000039&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "IT.정보통신업>쇼핑몰.오픈마켓.소셜커머스": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10007&indsCode=1000040&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "IT.정보통신업>포털.컨텐츠.커뮤니티": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10007&indsCode=1000041&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "IT.정보통신업>네트워크.통신서비스": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10007&indsCode=1000042&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "IT.정보통신업>정보보안": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10007&indsCode=1000043&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "IT.정보통신업>컴퓨터.하드웨어.장비": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10007&indsCode=1000044&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "IT.정보통신업>게임.애니메이션": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10007&indsCode=1000045&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "IT.정보통신업>모바일.APP": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10007&indsCode=1000046&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "IT.정보통신업>IT컨설팅": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10007&indsCode=1000047&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
             "금융.은행업>은행.금융": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10002&indsCode=1000011&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
             "금융.은행업>캐피탈.대출": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10002&indsCode=1000012&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
             "금융.은행업>증권.보험.카드": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10002&indsCode=1000013&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "미디어.광고업>방송.케이블.프로덕션": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10005&indsCode=1000030&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "미디어.광고업>신문.잡지.언론사": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10005&indsCode=1000031&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "미디어.광고업>광고.홍보.전시": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10005&indsCode=1000032&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "미디어.광고업>영화.음반.배급": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10005&indsCode=1000033&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "미디어.광고업>연예.엔터테인먼트": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10005&indsCode=1000034&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "미디어.광고업>출판.인쇄.사진": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10005&indsCode=1000035&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "문화.예술.디자인업>문화.공연.예술": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10006&indsCode=1000036&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "문화.예술.디자인업>디자인.CAD": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10006&indsCode=1000037&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
+            "의료.제약업>제약.보건.바이오": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10004&indsCode=1000028&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
         }
-        industry = "금융.은행업>" + industries['금융.은행업'][1]
         soup = get_soup_from_page_with_query(urls[industry])
         if not get_company_info_urls(soup, company_info_urls):
             break
         print(f"Crawling from {page_no}th page")
         page_no += 1
         time.sleep(1)
-    company_info_urls.to_csv("금융.은행업>캐피탈.대출_회사정보_링크_목록.csv")
+    company_info_urls.to_csv("csv-files/medical/url-files/" + industry + "_회사정보_링크_목록.csv")
 
 
 if __name__ == "__main__":
