@@ -81,6 +81,7 @@ def get_finance_dictlist():
             finance_dict['finance_num'] = file_name.split('_')[1][0:6]
             finance_dictlist.append(finance_dict)
     return finance_dictlist
+
 """
 refine_finance_dict_to_df: finance_itemlist과 finance_dict를 받아서 데이터 프레임으로 만들어줍니다.
 finance_itemlist: get_finance_itemlist 메서드에서 가져온 리스트
