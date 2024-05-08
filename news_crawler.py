@@ -20,7 +20,9 @@ def crawl_naver_news(search, start_page, end_page):
             link = item.find('a', class_='news_tit')['href']
             time_element = item.find('span', class_='info')
 
+            # Default time value
             time = None
+
             # Check if time_element contains time information
             if time_element:
                 time_text = time_element.get_text(strip=True)
@@ -31,9 +33,6 @@ def crawl_naver_news(search, start_page, end_page):
                     current_time = datetime.datetime.now()
                     time = current_time - datetime.timedelta(hours=hours_ago)
                     time = time.strftime('%Y-%m-%d %H:%M')
-                else:
-                    # Skip the current iteration if time_text does not contain time information
-                    continue
 
             articles.append({'Title': title, 'Preview': preview, 'URL': link, 'Time': time})
 
