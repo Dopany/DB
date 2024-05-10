@@ -1,8 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
-import csv, re, datetime
-import psycopg2
+import csv, re, datetime, time, os, psycopg2
 
+# 디비 연결 정보 불러오기 
 def read_db_credentials(file_path):
     credentials = {}
     with open(file_path, mode='r') as file:
@@ -11,6 +11,7 @@ def read_db_credentials(file_path):
             credentials[key] = value
     return credentials
 
+# 디비에서 회사 정보 가져오기
 def fetch_company_data_from_db(credentials):
     try:
         conn = psycopg2.connect(
@@ -21,7 +22,7 @@ def fetch_company_data_from_db(credentials):
             port=credentials['DB_PORT']
         )
         cur = conn.cursor()
-        cur.execute("SELECT company_id, company_name FROM ETF_company")
+        cur.execute('SELECT company_id, company_name FROM "ETF_company"')
         companies = cur.fetchall()
         cur.close()
         conn.close()
@@ -29,83 +30,62 @@ def fetch_company_data_from_db(credentials):
     except psycopg2.Error as e:
         print("Error connecting to PostgreSQL database:", e)
 
-def get_table_names(dbname, user, password, host, port):
-    conn = psycopg2.connect(
-        dbname=dbname,
-        user=user,
-        password=password,
-        host=host,
-        port=port
-    )
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT table_name
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-        ORDER BY table_name;
-    """)
-    table_names = [row[0] for row in cur.fetchall()]
-    conn.close()
-    return table_names
-
-# 연결 정보
-dbname = "postgres"
-user = "kimseunghyun"
-password = ""
-host = "localhost"
-port = "5432"
-
-# 테이블 이름 가져오기
-table_names = get_table_names(dbname, user, password, host, port)
-print("테이블 이름:")
-for name in table_names:
-    print(name)
-    
-    
-def crawl_and_save_news_for_companies(companies, start_page, end_page):
+# company_name을 검색어로 하여 네이버 뉴스 크롤링 결과 csv저장
+def crawl_and_save_news_for_companies(companies, start_page):
     for company in companies:
         company_id = company[0]  
         company_name = company[1]  
-        search = company_name  
-        articles = crawl_naver_news(search, start_page, end_page)  
-        # 크롤링 결과를 CSV 파일에 저장
-        save_to_csv(articles, f"{company_name}_news.csv", company_id, company_name)
-
-def crawl_naver_news(search, start_page, end_page):
+        search = company_name 
+        
+        
+        articles = crawl_naver_news(search, start_page)  
+        # 크롤링 결과가 있다면, CSV 파일에 저장
+        if articles:
+            save_to_csv(articles, f"{company_name}_news.csv", company_id, company_name)
+            print(f"Crawling news for company: {company_name}, O")   # 크롤링이 성공적으로 수행됨을 표시
+        else:
+            print(f"Crawling news for company: {company_name}, X")  # 크롤링이 실패함을 표시
+            
+# 네이버 뉴스 크롤링
+def crawl_naver_news(search, start_page):
     articles = []
+    url = f"https://search.naver.com/search.naver?where=news&sm=tab_pge&query={search}&start={start_page}"
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
 
-    for page in range(start_page, end_page + 1):
-        start = (page - 1) * 10 + 1
-        url = f"https://search.naver.com/search.naver?where=news&sm=tab_pge&query={search}&start={start}"
+    news_items = soup.find_all('div', class_='news_wrap')
 
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'html.parser')
+    for item in news_items:
+        title = item.find('a', class_='news_tit').get_text(strip=True)
+        preview = item.find('div', class_='news_dsc').get_text(strip=True)
+        link = item.find('a', class_='news_tit')['href']
+        time_element = item.find('span', class_='info')
 
-        news_items = soup.find_all('div', class_='news_wrap')
+        post_time = None
+        
+        # 작성 시간 yyyy-mm-dd 구조로 변경
+        if time_element:
+            time_text = time_element.get_text(strip=True)
+            if '시간 전' in time_text:
+                match = re.search(r'(\d+)시간 전', time_text)
+                hours_ago = int(match.group(1))
+                current_time = datetime.datetime.now()
+                post_time = current_time - datetime.timedelta(hours=hours_ago)
+                post_time = post_time.strftime('%Y-%m-%d %H:%M')
 
-        for item in news_items:
-            title = item.find('a', class_='news_tit').get_text(strip=True)
-            preview = item.find('div', class_='news_dsc').get_text(strip=True)
-            link = item.find('a', class_='news_tit')['href']
-            time_element = item.find('span', class_='info')
-
-            time = None
-
-            if time_element:
-                time_text = time_element.get_text(strip=True)
-                if '시간 전' in time_text:
-                    match = re.search(r'(\d+)시간 전', time_text)
-                    hours_ago = int(match.group(1))
-                    current_time = datetime.datetime.now()
-                    time = current_time - datetime.timedelta(hours=hours_ago)
-                    time = time.strftime('%Y-%m-%d %H:%M')
-
-            articles.append({'Title': title, 'Preview': preview, 'URL': link, 'Time': time})
-
+        articles.append({'news_title': title, 'news_text': preview, 'news_url': link, 'posted_at': post_time})
+    time.sleep(1)
     return articles
 
+# csv 저장
 def save_to_csv(data, filename, company_id, company_name):
-    with open(filename, mode='w', encoding='utf-8', newline='') as file:
+    if not os.path.exists('news_csv'):
+        os.makedirs('news_csv')
+
+    # 파일 경로를 news_csv 폴더 내의 파일로 지정
+    filepath = os.path.join('news_csv', filename)
+    
+    with open(filepath, mode='w', encoding='utf-8', newline='') as file:
         fieldnames = ['company_id', 'company_name', 'news_title', 'news_text', 'news_url', 'posted_at']
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
@@ -121,5 +101,4 @@ if __name__ == "__main__":
     companies = fetch_company_data_from_db(db_credentials)
 
     start_page = 1
-    end_page = 2
-    crawl_and_save_news_for_companies(companies, start_page, end_page)
+    crawl_and_save_news_for_companies(companies, start_page)
