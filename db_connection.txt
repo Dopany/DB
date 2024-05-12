@@ -1,4 +1,4 @@
-DB_NAME=postgres
+DB_NAME=Dopany
 DB_USER=joonghyeon
 DB_PASSWORD=Wndgus2023!@
 DB_HOST=localhost
