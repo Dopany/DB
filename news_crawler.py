@@ -22,7 +22,7 @@ def fetch_company_data_from_db(credentials):
             port=credentials['DB_PORT']
         )
         cur = conn.cursor()
-        cur.execute('SELECT company_id, company_name FROM "ETF_company"')
+        cur.execute('SELECT company_id, company_name FROM "ETF_company" WHERE company_name NOT LIKE \'%(주)%\' AND company_name NOT LIKE \'%㈜%\'')
         companies = cur.fetchall()
         cur.close()
         conn.close()
@@ -74,7 +74,7 @@ def crawl_naver_news(search, start_page):
                 post_time = post_time.strftime('%Y-%m-%d %H:%M')
 
         articles.append({'news_title': title, 'news_text': preview, 'news_url': link, 'posted_at': post_time})
-    time.sleep(1)
+        time.sleep(1)
     return articles
 
 # csv 저장
