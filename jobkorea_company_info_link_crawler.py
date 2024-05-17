@@ -14,7 +14,11 @@ need to install "lxml"
 """
 
 
-def get_soup_from_page_with_query(url):
+def get_soup_from_page_with(url):
+    """
+    :param url:
+    :return soup object of web page:
+    """
     response = requests.get(url, headers={
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36'
     })
@@ -42,7 +46,13 @@ def get_company_info_urls(soup, urls):
     return companies
 
 
+
 def main():
+    """
+    industries에 해당하는 모든 산업군의 기업정보 url주소들을 가져와서
+    산업마다 csv파일로 저장
+    :return:
+    """
     industries = {
         "IT.정보통신업": ["솔루션.SI.CRM.ERP", "웹에이전시", "쇼핑몰.오픈마켓.소셜커머스",
                      "포털.컨텐츠.커뮤니티", "네트워크.통신서비스", "정보보안",
@@ -55,7 +65,7 @@ def main():
     }
     page_no = 1
     company_info_urls = pd.DataFrame(columns=['company_info_url'])
-    industry = "의료.제약업>" + industries['의료.제약업'][0]
+    industry = "IT.정보통신업>" + industries['IT.정보통신업'][7]
     while True:
         urls = {
             "IT.정보통신업>솔루션.SI.CRM.ERP": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10007&indsCode=1000038&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
@@ -81,13 +91,13 @@ def main():
             "문화.예술.디자인업>디자인.CAD": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10006&indsCode=1000037&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
             "의료.제약업>제약.보건.바이오": f"https://www.jobkorea.co.kr/Salary/Index?coKeyword=&tabindex=1&indsCtgrCode=10004&indsCode=1000028&jobTypeCode=&haveAGI=0&orderCode=2&coPage={page_no}#salarySearchCompany",
         }
-        soup = get_soup_from_page_with_query(urls[industry])
+        soup = get_soup_from_page_with(urls[industry])
         if not get_company_info_urls(soup, company_info_urls):
             break
         print(f"Crawling from {page_no}th page")
         page_no += 1
         time.sleep(1)
-    company_info_urls.to_csv("csv-files/medical/url-files/" + industry + "_회사정보_링크_목록.csv")
+    company_info_urls.to_csv("csv-files/medical/url-files/" + industry + "_회사정보_링크_목록2.csv")
 
 
 if __name__ == "__main__":
